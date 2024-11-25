@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>StringExtensionsTest</id>
+    <version>1.0.0</version>
+    <authors>StringExtensionsTest</authors>
+    <description>Package Description</description>
+    <repository type="git" commit="1e0a70bd4cd87f7f717fa9b5b3e6a3e4ec347331" />
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="StringExtensions" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="NUnit" version="4.2.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\bin\Release\net8.0\StringExtensionsTest.runtimeconfig.json" target="lib\net8.0\StringExtensionsTest.runtimeconfig.json" />
+    <file src="D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\bin\Release\net8.0\StringExtensionsTest.dll" target="lib\net8.0\StringExtensionsTest.dll" />
+  </files>
+</package>

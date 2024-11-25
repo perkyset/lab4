@@ -17,3 +17,5 @@ D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\obj\Re
 D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\obj\Release\net8.0\StringExtensionsTest.pdb
 D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\obj\Release\net8.0\StringExtensionsTest.genruntimeconfig.cache
 D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\obj\Release\net8.0\ref\StringExtensionsTest.dll
+D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\bin\Release\net8.0\nunit.framework.dll
+D:\OneDrive\Робочий стіл\StringExtensions\StringExtensionsTest\bin\Release\net8.0\nunit.framework.legacy.dll
