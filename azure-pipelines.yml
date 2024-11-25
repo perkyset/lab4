@@ -4,24 +4,13 @@ trigger:
 pool:
   name: Default
 
-variables:
-  system.debug: true  # Enable debug logs for detailed output
-
 steps:
-# Step 1: Authenticate NuGet with Azure Artifacts
-- task: NuGetAuthenticate@0
-  displayName: "Authenticate NuGet with Azure Artifacts"
-
-# Step 2: Build the project
 - task: DotNetCoreCLI@2
-  displayName: "Build project"
   inputs:
     command: 'build'
     projects: '**/*.csproj'
 
-# Step 3: Pack the NuGet package
 - task: DotNetCoreCLI@2
-  displayName: "Pack NuGet package"
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
@@ -30,15 +19,9 @@ steps:
     minorVersion: '0'
     patchVersion: '0'
 
-# Step 4: Verify artifact staging directory contents
-- script: dir "$(Build.ArtifactStagingDirectory)"
-  displayName: "Verify artifact staging directory contents"
-
-# Step 5: Push the package to Azure Artifacts feed
 - task: NuGetCommand@2
-  displayName: "Push NuGet package to Azure Artifacts"
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'internal'
-    publishVstsFeed: 'Lab4'
+    publishVstsFeed: 'S8G32H/Lab4'
