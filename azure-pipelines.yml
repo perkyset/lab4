@@ -9,13 +9,13 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: '/*.csproj'
+    projects: '**/*.csproj'
 
 # Pack the project into NuGet packages
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    packagesToPack: '/*.csproj'
+    packagesToPack: '**/*.csproj'
     versioningScheme: 'byPrereleaseNumber'
     majorVersion: '1'
     minorVersion: '0'
