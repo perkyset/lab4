@@ -5,11 +5,13 @@ pool:
   name: Default
 
 steps:
+# Build the project
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
     projects: '**/*.csproj'
 
+# Pack the project into NuGet packages
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
@@ -19,6 +21,13 @@ steps:
     minorVersion: '0'
     patchVersion: '0'
 
+# Verify the contents of the build artifact directory (optional for debugging)
+- script: |
+    echo "Contents of $(Build.ArtifactStagingDirectory):"
+    ls $(Build.ArtifactStagingDirectory)
+  displayName: 'Verify artifact staging directory contents'
+
+# Push the NuGet packages to the Azure Artifacts feed
 - task: NuGetCommand@2
   inputs:
     command: 'push'
