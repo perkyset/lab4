@@ -4,15 +4,24 @@ trigger:
 pool:
   name: Default
 
+variables:
+  system.debug: true  # Enable debug logs for detailed output
+
 steps:
-# Build the project
+# Step 1: Authenticate NuGet with Azure Artifacts
+- task: NuGetAuthenticate@0
+  displayName: "Authenticate NuGet with Azure Artifacts"
+
+# Step 2: Build the project
 - task: DotNetCoreCLI@2
+  displayName: "Build project"
   inputs:
     command: 'build'
     projects: '**/*.csproj'
 
-# Pack the project into NuGet packages
+# Step 3: Pack the NuGet package
 - task: DotNetCoreCLI@2
+  displayName: "Pack NuGet package"
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
@@ -21,14 +30,13 @@ steps:
     minorVersion: '0'
     patchVersion: '0'
 
-# Verify the contents of the build artifact directory (optional for debugging)
-- script: |
-    echo "Contents of $(Build.ArtifactStagingDirectory):"
-    dir "$(Build.ArtifactStagingDirectory)"
-  displayName: 'Verify artifact staging directory contents'
+# Step 4: Verify artifact staging directory contents
+- script: dir "$(Build.ArtifactStagingDirectory)"
+  displayName: "Verify artifact staging directory contents"
 
-# Push the NuGet packages to the Azure Artifacts feed
+# Step 5: Push the package to Azure Artifacts feed
 - task: NuGetCommand@2
+  displayName: "Push NuGet package to Azure Artifacts"
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
