@@ -1,35 +1,29 @@
 trigger:
-- main # Replace with your branch name if different
+- main
 
 pool:
-  vmImage: 'windows-latest'
+  name: Default
 
 steps:
-# Step 1: Authenticate with the NuGet feed
-- task: NuGetAuthenticate@1
-  displayName: 'Authenticate with Azure Artifacts feed'
-
-# Step 2: Restore NuGet packages
-- task: NuGetCommand@2
-  displayName: 'Restore NuGet packages'
+- task: DotNetCoreCLI@2
   inputs:
-    command: 'restore' # NuGet restore command
-    restoreSolution: '**/*.sln' # Path to your solution file(s)
-    feedsToUse: 'config' # Uses the nuget.config for package sources
+    command: 'build'
+    projects: '**/*.csproj'
 
-# Step 3: Build the solution
-- task: VSBuild@1
-  displayName: 'Build solution'
+- task: DotNetCoreCLI@2
   inputs:
-    solution: '**/*.sln' # Path to your solution file(s)
-    msbuildArchitecture: 'x64'
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    versioningScheme: 'byPrereleaseNumber'
+    majorVersion: '1'
+    minorVersion: '0'
+    patchVersion: '0'
 
-# Step 4: Test or push packages (if applicable)
 - task: NuGetCommand@2
-  displayName: 'Push NuGet package'
-  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main') # Only push on main branch
   inputs:
     command: 'push'
-    publishVstsFeed: 'S8G32H/Lab4/Lab4' # Replace with your exact feed name
-    allowPackageConflicts: true
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'S8G32H/Lab4'
+    feedsToUse: 'select'
+    vstsFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
