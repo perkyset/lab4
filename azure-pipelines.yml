@@ -4,42 +4,22 @@ trigger:
 pool:
   name: Default
 
-variables:
-  BuildConfiguration: 'Release' # Set the build configuration to Release
-  MajorVersion: '1'
-  MinorVersion: '0'
-  PatchVersion: '0'
-
 steps:
-# Install .NET SDK if not already on the agent
-- task: UseDotNet@2
-  inputs:
-    packageType: 'sdk'
-    version: '8.0.x'
-
-# Restore dependencies
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-
 # Build the project
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(BuildConfiguration)'
+    projects: '/*.csproj'
 
 # Pack the project into NuGet packages
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(BuildConfiguration)'
+    packagesToPack: '/*.csproj'
     versioningScheme: 'byPrereleaseNumber'
-    majorVersion: '$(MajorVersion)'
-    minorVersion: '$(MinorVersion)'
-    patchVersion: '$(PatchVersion)'
+    majorVersion: '1'
+    minorVersion: '0'
+    patchVersion: '0'
 
 # Verify the contents of the build artifact directory (optional for debugging)
 - script: |
@@ -51,11 +31,6 @@ steps:
 - task: NuGetCommand@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    nuGetFeedType: 'external'
-    publishFeedCredentials: '$(System.AccessToken)' # Use the system-provided token
-    feedsToUse: 'select'
-    externalFeedCredentials: |
-      <add key="source" value="https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json" />
-      <add key="username" value="AzureDevOps" />
-      <add key="password" value="$(System.AccessToken)" />
+    packagesToPush: '$(Build.ArtifactStagingDirectory)//*.nupkg;!$(Build.ArtifactStagingDirectory)//*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'Lab4'
