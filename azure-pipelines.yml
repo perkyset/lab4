@@ -24,7 +24,7 @@ steps:
 # Verify the contents of the build artifact directory (optional for debugging)
 - script: |
     echo "Contents of $(Build.ArtifactStagingDirectory):"
-    ls $(Build.ArtifactStagingDirectory)
+    dir "$(Build.ArtifactStagingDirectory)"
   displayName: 'Verify artifact staging directory contents'
 
 # Push the NuGet packages to the Azure Artifacts feed
