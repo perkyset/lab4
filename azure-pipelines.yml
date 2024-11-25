@@ -1,40 +1,35 @@
 trigger:
-- main # Adjust the branch name as needed
+- main # Replace with your branch name if different
 
 pool:
-  vmImage: 'windows-latest' # Use a Microsoft-hosted agent with Windows
+  vmImage: 'windows-latest'
 
 steps:
-# 1. Install NuGet CLI
-- task: UseNuGet@5
-  displayName: 'Install NuGet CLI'
-  inputs:
-    version: 'latest'
-
-# 2. Authenticate with the Azure Artifacts feed
+# Step 1: Authenticate with the NuGet feed
 - task: NuGetAuthenticate@1
-  displayName: 'Authenticate with Azure Artifacts'
+  displayName: 'Authenticate with Azure Artifacts feed'
 
-# 3. Restore NuGet packages using the feed
+# Step 2: Restore NuGet packages
 - task: NuGetCommand@2
-  displayName: 'Restore NuGet Packages'
+  displayName: 'Restore NuGet packages'
   inputs:
-    command: 'restore'
-    restoreSolution: '**/*.sln' # Path to your solution file
-    feedsToUse: 'select'
-    vstsFeed: 'S8G32H/Lab4/Lab4'
+    command: 'restore' # NuGet restore command
+    restoreSolution: '**/*.sln' # Path to your solution file(s)
+    feedsToUse: 'config' # Uses the nuget.config for package sources
 
-# 4. Build the solution
+# Step 3: Build the solution
 - task: VSBuild@1
-  displayName: 'Build Solution'
+  displayName: 'Build solution'
   inputs:
-    solution: '**/*.sln'
+    solution: '**/*.sln' # Path to your solution file(s)
     msbuildArchitecture: 'x64'
 
-# 5. Publish artifacts (optional, if you're building a package)
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Build Artifacts'
+# Step 4: Test or push packages (if applicable)
+- task: NuGetCommand@2
+  displayName: 'Push NuGet package'
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main') # Only push on main branch
   inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
-    publishLocation: 'Container'
+    command: 'push'
+    publishVstsFeed: 'S8G32H/Lab4/Lab4' # Replace with your exact feed name
+    allowPackageConflicts: true
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
