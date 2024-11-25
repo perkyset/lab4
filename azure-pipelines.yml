@@ -15,7 +15,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '6.x' # Replace with the required .NET version for your project
+    version: '8.0.x'
 
 # Restore dependencies
 - task: DotNetCoreCLI@2
