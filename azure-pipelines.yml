@@ -1,29 +1,40 @@
 trigger:
-- main
+- main # Adjust the branch name as needed
 
 pool:
-  name: Default
+  vmImage: 'windows-latest' # Use a Microsoft-hosted agent with Windows
 
 steps:
-- task: DotNetCoreCLI@2
+# 1. Install NuGet CLI
+- task: UseNuGet@5
+  displayName: 'Install NuGet CLI'
   inputs:
-    command: 'build'
-    projects: '**/*.csproj'
+    version: 'latest'
 
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'pack'
-    packagesToPack: '**/*.csproj'
-    versioningScheme: 'byPrereleaseNumber'
-    majorVersion: '1'
-    minorVersion: '0'
-    patchVersion: '0'
+# 2. Authenticate with the Azure Artifacts feed
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate with Azure Artifacts'
 
+# 3. Restore NuGet packages using the feed
 - task: NuGetCommand@2
+  displayName: 'Restore NuGet Packages'
   inputs:
-    command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    nuGetFeedType: 'internal'
-    publishVstsFeed: 'S8G32H/Lab4'
+    command: 'restore'
+    restoreSolution: '**/*.sln' # Path to your solution file
     feedsToUse: 'select'
-    vstsFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
+    vstsFeed: 'S8G32H/Lab4/Lab4'
+
+# 4. Build the solution
+- task: VSBuild@1
+  displayName: 'Build Solution'
+  inputs:
+    solution: '**/*.sln'
+    msbuildArchitecture: 'x64'
+
+# 5. Publish artifacts (optional, if you're building a package)
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Build Artifacts'
+  inputs:
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'
