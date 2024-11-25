@@ -2,56 +2,60 @@ trigger:
 - main
 
 pool:
-  vmImage: 'windows-latest' # Change to 'ubuntu-latest' or another image as required
+  name: Default
 
 variables:
-  FEED_URL: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
-  PROJECT_NAME: 'Lab4'
+  BuildConfiguration: 'Release' # Set the build configuration to Release
+  MajorVersion: '1'
+  MinorVersion: '0'
+  PatchVersion: '0'
 
 steps:
-# 1. Check out the code
+# Install .NET SDK if not already on the agent
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '6.x'
-  displayName: 'Install .NET SDK'
+    version: '6.x' # Replace with the required .NET version for your project
 
-# 2. Authenticate with Azure Artifacts feed
-- script: |
-    echo "Setting up NuGet authentication..."
-    nuget sources add -Name AzureArtifacts -Source $(FEED_URL) -Username 'AzureDevOps' -Password $(System.AccessToken) -StorePasswordInClearText
-  env:
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-  displayName: 'Configure NuGet Authentication'
-
-# 3. Restore NuGet packages
-- task: NuGetCommand@2
+# Restore dependencies
+- task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
-    restoreSolution: '**/*.sln'
-    feedsToUse: 'select'
-    nugetFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
-  displayName: 'Restore NuGet Packages'
+    projects: '**/*.csproj'
 
-# 4. Build the solution
+# Build the project
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
     projects: '**/*.csproj'
-    arguments: '--configuration Release'
-  displayName: 'Build Solution'
+    arguments: '--configuration $(BuildConfiguration)'
 
-# 5. Run tests (if applicable)
+# Pack the project into NuGet packages
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'test'
-    projects: '**/*Tests.csproj'
-    arguments: '--configuration Release'
-  displayName: 'Run Tests'
+    command: 'pack'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(BuildConfiguration)'
+    versioningScheme: 'byPrereleaseNumber'
+    majorVersion: '$(MajorVersion)'
+    minorVersion: '$(MinorVersion)'
+    patchVersion: '$(PatchVersion)'
 
-# 6. Publish artifacts (optional)
-- task: PublishPipelineArtifact@1
+# Verify the contents of the build artifact directory (optional for debugging)
+- script: |
+    echo "Contents of $(Build.ArtifactStagingDirectory):"
+    dir "$(Build.ArtifactStagingDirectory)"
+  displayName: 'Verify artifact staging directory contents'
+
+# Push the NuGet packages to the Azure Artifacts feed
+- task: NuGetCommand@2
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)'
-    artifact: 'drop'
-  displayName: 'Publish Build Artifacts'
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: '$(System.AccessToken)' # Use the system-provided token
+    feedsToUse: 'select'
+    externalFeedCredentials: |
+      <add key="source" value="https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json" />
+      <add key="username" value="AzureDevOps" />
+      <add key="password" value="$(System.AccessToken)" />
