@@ -1,44 +1,29 @@
 trigger:
-- main # Trigger on pushes to the 'main' branch
+- main
 
 pool:
-  vmImage: 'windows-latest' # Use a Windows agent for NuGet and .NET builds
+  name: Default
 
 steps:
-# Step 1: Install NuGet CLI (if it's not already installed)
-- task: UseNuGet@5
-  displayName: 'Install NuGet CLI'
+- task: DotNetCoreCLI@2
   inputs:
-    versionSpec: '>=5.7' # Ensure NuGet 5.7 or later is installed
-    checkLatest: true
+    command: 'build'
+    projects: '**/*.csproj'
 
-# Step 2: Authenticate to Azure Artifacts
-- task: NuGetAuthenticate@1
-  displayName: 'Authenticate with Azure Artifacts'
+- task: DotNetCoreCLI@2
   inputs:
-    nuGetServiceConnections: 'MyAzureArtifactsServiceConnection' # Replace with the name of your service connection
+    command: 'pack'
+    packagesToPack: '**/*.csproj'
+    versioningScheme: 'byPrereleaseNumber'
+    majorVersion: '1'
+    minorVersion: '0'
+    patchVersion: '0'
 
-# Step 3: Restore NuGet Packages
 - task: NuGetCommand@2
-  displayName: 'Restore NuGet Packages'
   inputs:
-    command: 'restore' # Restore packages
-    restoreSolution: '**/*.sln' # Adjust to point to your solution file
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'S8G32H/Lab4'
     feedsToUse: 'select'
-    vstsFeed: 'S8G32H/Lab4' # Replace with your project and feed name
-
-# Step 4: Build the Solution
-- task: VSBuild@1
-  displayName: 'Build the Solution'
-  inputs:
-    solution: '**/*.sln' # Replace with the path to your .sln file
-    msbuildArgs: '/p:Configuration=Release' # Build with Release configuration
-    platform: 'Any CPU'
-
-# Step 5: Publish Build Artifacts (Optional)
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Build Artifacts'
-  inputs:
-    pathToPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
-    publishLocation: 'Container'
+    vstsFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
