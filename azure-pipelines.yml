@@ -27,10 +27,10 @@ steps:
     dir "$(Build.ArtifactStagingDirectory)"
   displayName: 'Verify artifact staging directory contents'
 
-# Push the NuGet packages to the Azure Artifacts feed
 - task: NuGetCommand@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)//*.nupkg;!$(Build.ArtifactStagingDirectory)//*.symbols.nupkg'
-    nuGetFeedType: 'internal'
-    publishVstsFeed: 'Lab4'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: $(SYSTEM_ACCESSTOKEN)
+    publishFeedUri: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
