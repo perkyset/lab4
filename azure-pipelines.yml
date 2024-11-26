@@ -1,36 +1,45 @@
+# azure-pipelines.yml
 trigger:
-- main
+  branches:
+    include:
+      - main  # Adjust this to your main branch name
 
 pool:
-  name: Default
+  vmImage: 'windows-latest'  # Use a self-hosted agent if necessary
 
 steps:
-# Build the project
 - task: DotNetCoreCLI@2
+  displayName: 'Restore NuGet packages'
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Build the project'
   inputs:
     command: 'build'
     projects: '**/*.csproj'
+    arguments: '--configuration Release'
 
-# Pack the project into NuGet packages
 - task: DotNetCoreCLI@2
+  displayName: 'Pack the project'
   inputs:
     command: 'pack'
     packagesToPack: '**/*.csproj'
-    versioningScheme: 'byPrereleaseNumber'
-    majorVersion: '1'
-    minorVersion: '0'
-    patchVersion: '0'
+    versioningScheme: 'byBuildNumber'
+    configuration: 'Release'
 
-# Verify the contents of the build artifact directory (optional for debugging)
-- script: |
-    echo "Contents of $(Build.ArtifactStagingDirectory):"
-    dir "$(Build.ArtifactStagingDirectory)"
-  displayName: 'Verify artifact staging directory contents'
-
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
+  displayName: 'Push NuGet package to Azure Artifacts'
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
-    nuGetFeedType: 'external'
-    publishFeedCredentials: $(SYSTEM_ACCESSTOKEN)
-    publishFeedUri: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
+    packagesToPush: '**/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'Lab4'  # Replace with your Azure Artifacts feed name
+    allowPackageConflicts: true
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish NuGet package as artifact'
+  inputs:
+    targetPath: '$(Pipeline.Workspace)'
+    artifactName: 'NuGetPackages'
