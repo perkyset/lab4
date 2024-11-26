@@ -8,7 +8,7 @@ pool:
 variables:
   buildConfiguration: 'Release'
   nugetFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
-  packageName: 'YourPackageName'  # Replace with your package name
+  packageName: 'StringExtensions'  # Replace with your package name
 
 steps:
 - task: DotNetCoreCLI@2
