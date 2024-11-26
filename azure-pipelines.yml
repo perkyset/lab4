@@ -1,52 +1,32 @@
-name: '$(Build.DefinitionName)_$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)'
-
 trigger:
 - main
 
 pool:
-  name: 'Default'
-
-variables:
-  buildConfiguration: 'Release'
-  nugetFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
-  packageName: 'StringExtensions'
+  name: Default
 
 steps:
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'restore'
-    projects: '**/*.csproj'
-
-- task: DotNetCoreCLI@2
-  inputs:
     command: 'build'
-    projects: '**/*.csproj'
-    arguments: '--configuration $(buildConfiguration)'
+    projects: '/*.csproj'
 
 - task: DotNetCoreCLI@2
   inputs:
     command: 'pack'
-    packagesToPack: '**/*.csproj'
-    versioningScheme: 'byBuildNumber'
-    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    packagesToPack: '/*.csproj'
+    versioningScheme: 'byPrereleaseNumber'
+    majorVersion: '1'
+    minorVersion: '0'
+    patchVersion: '0'
 
 - script: |
-    echo "Listing contents of $(Build.ArtifactStagingDirectory):"
-    ls $(Build.ArtifactStagingDirectory)
-  displayName: 'List Artifact Staging Directory'
+    echo "Contents of $(Build.ArtifactStagingDirectory):"
+    dir "$(Build.ArtifactStagingDirectory)"
+  displayName: 'Verify artifact staging directory contents'
 
-- task: NuGetAuthenticate@0
-  inputs:
-    nuGetServiceConnections: 'MyService'
-
-- task: DotNetCoreCLI@2
+- task: NuGetCommand@2
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    nuGetFeedType: 'external'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)//*.nupkg;!$(Build.ArtifactStagingDirectory)//*.symbols.nupkg'
+    nuGetFeedType: 'internal'
     publishVstsFeed: 'Lab4'
-
-- task: PublishPipelineArtifact@1
-  inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'NuGetPackages'
