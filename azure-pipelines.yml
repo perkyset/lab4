@@ -33,7 +33,7 @@ steps:
 
 - script: |
     echo "Listing contents of $(Build.ArtifactStagingDirectory):"
-    ls $(Build.ArtifactStagingDirectory)
+    dir $(Build.ArtifactStagingDirectory)
   displayName: 'List Artifact Staging Directory'
 
 - task: DotNetCoreCLI@2
