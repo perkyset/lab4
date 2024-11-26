@@ -1,6 +1,5 @@
 name: '$(Build.DefinitionName)_$(Year:yyyy).$(Month).$(DayOfMonth)$(Rev:.r)'
 
-# azure-pipelines.yml
 trigger:
 - main  # Adjust this to your default branch
 
@@ -10,14 +9,15 @@ pool:
 variables:
   buildConfiguration: 'Release'
   nugetFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
-  packageName: 'StringExtensions'  # Replace with your package name
+  packageName: 'StringExtensions'  # Package name
+  apiKey: '3SHrQ9nijjlpY5z8gAiIFy53G5Xxvgr9GvjaPkW1BdI4TSagGnrhJQQJ99AKACAAAAAnPw96AAASAZDOS9EZ'  # Replace with your actual Azure Artifacts API key
 
 steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: 'restore'
     projects: '**/*.csproj'
-    
+
 - task: DotNetCoreCLI@2
   inputs:
     command: 'build'
@@ -31,12 +31,18 @@ steps:
     versioningScheme: 'byBuildNumber'
     arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
 
+- script: |
+    echo "Listing contents of $(Build.ArtifactStagingDirectory):"
+    ls $(Build.ArtifactStagingDirectory)
+  displayName: 'List Artifact Staging Directory'
+
 - task: DotNetCoreCLI@2
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    nuGetFeedType: 'external'
-    publishVstsFeed: 'Lab4'  # Replace with your feed name in Azure Artifacts
+    nuGetFeedType: 'external'  # Use 'external' for Azure Artifacts feed
+    publishVstsFeed: ''  # Leave empty since we are not using a service connection
+    arguments: '--api-key $(apiKey)'  # Pass the API key directly here
 
 - task: PublishPipelineArtifact@1
   inputs:
