@@ -42,7 +42,7 @@ steps:
     packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     nuGetFeedType: 'external'  # Use 'external' for Azure Artifacts feed
     publishVstsFeed: ''  # Leave empty since we are not using a service connection
-    arguments: '--api-key $(apiKey)'  # Pass the API key directly here
+    arguments: '--api-key $(apiKey) -s $(nugetFeed)'  # Specify the source URL here
 
 - task: PublishPipelineArtifact@1
   inputs:
