@@ -4,13 +4,12 @@ trigger:
 - main
 
 pool:
-  name: 'Default
+  name: 'Default'
 
 variables:
   buildConfiguration: 'Release'
   nugetFeed: 'https://pkgs.dev.azure.com/S8G32H/Lab4/_packaging/Lab4/nuget/v3/index.json'
   packageName: 'StringExtensions'
-  apiKey: '3SHrQ9nijjlpY5z8gAiIFy53G5Xxvgr9GvjaPkW1BdI4TSagGnrhJQQJ99AKACAAAAAnPw96AAASAZDOS9EZ'
 
 steps:
 - task: DotNetCoreCLI@2
@@ -33,16 +32,19 @@ steps:
 
 - script: |
     echo "Listing contents of $(Build.ArtifactStagingDirectory):"
-    dir $(Build.ArtifactStagingDirectory)
+    ls $(Build.ArtifactStagingDirectory)
   displayName: 'List Artifact Staging Directory'
+
+- task: NuGetAuthenticate@0
+  inputs:
+    nuGetServiceConnections: 'MyService'
 
 - task: DotNetCoreCLI@2
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
     nuGetFeedType: 'external'
-    publishVstsFeed: ''
-    arguments: '--api-key $(apiKey) -s $(nugetFeed)'
+    publishVstsFeed: 'Lab4'
 
 - task: PublishPipelineArtifact@1
   inputs:
